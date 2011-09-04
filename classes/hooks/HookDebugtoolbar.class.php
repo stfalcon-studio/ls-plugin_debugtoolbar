@@ -21,7 +21,7 @@ class PluginDebugToolbar_HookDebugToolbar extends Hook
          */
         if ($oUserCurrent = $this->User_GetUserCurrent() and $oUserCurrent->isAdministrator()) {
             $this->AddHook('engine_init_complete', 'AddAssets');
-            $this->AddHook('template_body_end', 'RenderToolbar');
+            $this->AddHook('template_body_end', 'RenderToolbar', __CLASS__, -99999);
         }
     }
 
@@ -29,9 +29,13 @@ class PluginDebugToolbar_HookDebugToolbar extends Hook
      * Add plugin assets to template
      */
     public function AddAssets() {
-        $this->Viewer_AppendStyle(Plugin::GetTemplatePath(__CLASS__) . 'css/style.css');
-        $this->Viewer_AppendScript(Plugin::GetTemplatePath(__CLASS__) . 'js/jquery.js');
-        $this->Viewer_AppendScript(Plugin::GetTemplatePath(__CLASS__) . 'js/debugtoolbar.js');
+        $sPluginPath = Plugin::GetTemplatePath(__CLASS__);
+        $this->Viewer_AppendStyle($sPluginPath . 'css/style.css');
+        $this->Viewer_AppendStyle($sPluginPath . 'css/sh_style.css');
+        $this->Viewer_AppendScript($sPluginPath . 'js/sh_main.min.js');
+        $this->Viewer_AppendScript($sPluginPath . 'js/sh_sql.min.js');
+        $this->Viewer_AppendScript($sPluginPath . 'js/sh_php.min.js');
+        $this->Viewer_AppendScript($sPluginPath . 'js/debugtoolbar.js');
     }
 
     /**
@@ -42,38 +46,71 @@ class PluginDebugToolbar_HookDebugToolbar extends Hook
     public function RenderToolbar() {
         $oEngine = Engine::getInstance();
 
+        // Статистика запросов к БД
         $aStats = $oEngine->getStats();
+        $aStats['cache']['time'] = round($aStats['cache']['time'], 3);
 
-        $aStats['cache']['time'] = round($aStats['cache']['time'], 5);
+        $aStats['total']['count'] = $aStats['sql']['count'] + $aStats['cache']['count'];
 
-        $iTimeInit = $oEngine->GetTimeInit();
-        $iTimeFull = round(microtime(true) - $iTimeInit, 3);
+        $aStats['total']['time'] = $aStats['sql']['time'] + $aStats['cache']['time'];
 
+        // Детальная информация о запросах к БД
+        $aSqlDetails = PluginDebugToolbar::getSqlData();
 
-        $aSqlQueries = PluginDebugToolbar::getSqlData();
-
+        $aAdditionalInfo = array(
+            'mysql' => $this->Lang_Get('dt_col_mysql_additional', array(
+                'total_count' => $aStats['total']['count'],
+                'total_time' => $aStats['total']['time'],
+                'cache_count' => $aStats['cache']['count'],
+                'cache_time' => $aStats['total']['time'],
+            )),
+            'php_globals' => $this->Lang_Get('dt_col_php_globals_additional')
+        );
         // Зададим стиль для строки вывода запроса
-        foreach ($aSqlQueries as $sKey => &$sValue) {
+        foreach ($aSqlDetails as $sKey => &$sValue) {
             $iTime = (int) $sValue['time'];
 
             if ($iTime > 1000) {
-                $sRowStyle = 'Fatal';
+                $sRowStyle = 'fatal';
             } else if ($iTime > 500) {
-                $sRowStyle = 'Urgent';
+                $sRowStyle = 'urgent';
             } else if ($iTime > 100) {
-                $sRowStyle = 'Warning';
+                $sRowStyle = 'warning';
             } else if ($iTime > 30) {
-                $sRowStyle = 'Look';
+                $sRowStyle = 'look';
             } else {
-                $sRowStyle = 'Normal';
+                $sRowStyle = 'normal';
             }
             $sValue['rowStyle'] = $sRowStyle;
+            $sValue['time_text'] = ($iTime ? $iTime : '< 1') . ' ms';
         }
-        fb($aSqlQueries);
+
+        // Время создания страницы
+        $iTimeFull = round(microtime(true) - $oEngine->GetTimeInit(), 3);
+
+        // Использование ОЗУ
+        $aRamUsage['memory_limit'] = ini_get('memory_limit');
+        $aRamUsage['total'] = formatBytes(memory_get_usage());
+        $aRamUsage['peak'] = formatBytes(memory_get_peak_usage(true));
+
+
+        // PHP Globals
+        $aPhpGlobals = array(
+            '$_REQUEST' => $_REQUEST,
+            '$_POST' => $_POST,
+            '$_GET' => $_GET,
+            '$_SESSION' => $_SESSION,
+            '$_COOKIE' => $_COOKIE,
+            //'$_ENV' => $_ENV,
+            //'$_SERVER' => $_SERVER
+        );
         /**
          * Загружаем переменные в шаблон
          */
-        $this->Viewer_Assign('aSqlQueries', $aSqlQueries);
+        $this->Viewer_Assign('aRamUsage', $aRamUsage);
+        $this->Viewer_Assign('aAdditionalInfo', $aAdditionalInfo);
+        $this->Viewer_Assign('aSqlDetails', $aSqlDetails);
+        $this->Viewer_Assign('aPhpGlobals', $aPhpGlobals);
         $this->Viewer_Assign('aStats', $aStats);
         $this->Viewer_Assign('iTimeFull', $iTimeFull);
         $this->Viewer_Assign('LS_VERSION', LS_VERSION);

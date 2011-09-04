@@ -24,12 +24,8 @@ class PluginDebugToolbar extends Plugin
 
         parent::__construct();
 
-        $oEngine = Engine::getInstance();
-
         // Включаем логирование запросов, для того чтобы их позже вывести в панель
-        $oDbSimple = $oEngine->Database_GetConnect();
-
-        $oDbSimple->setLogger('PluginDebugToolbar::setSqlData');
+        Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugToolbar::setSqlData');
     }
 
     // SQL queries storage
@@ -48,44 +44,57 @@ class PluginDebugToolbar extends Plugin
      * Plugin initialization
      */
     public function Init() {
-
+        
     }
 
     /**
      * Store SQL data into temp storage
      *
-     * @staticvar int $count
-     * @param type $db
-     * @param type $sql
+     * @param object $oDb
+     * @param string $sMessage
      */
-    public static function setSqlData($db, $sql) {
-        static $count = 0;
-        if (false !== strpos($sql, '--')) {
-            // -- 0 ms; returned 0 row(s)
-            if (preg_match("/(\d+).*(\d+).*/si", $sql, $aMatch)) {
-                self::$aSqlData[$count]['time'] = $aMatch[1];
-                self::$aSqlData[$count]['rows'] = $aMatch[2];
+    public static function setSqlData($oDb, $sMessage) {
+        static $iQueryCount = 0;
+
+        /**
+         * Так как пока не получается нормально получить время исполнения запроса и сам запрос,
+         * будем парсить кашу которая стекается в лог файл.
+         * @TODO: Найти способ нормально получить данные о запросах из DbSimple.
+         */
+        if (false !== strpos($sMessage, '--')) {
+            // This is result: -- 0 ms; returned 0 row(s)
+            if (preg_match("/(\d+).+returned\s+(.*)/u", $sMessage, $aMatch)) {
+                self::$aSqlData[$iQueryCount]['time'] = $aMatch[1];
+                self::$aSqlData[$iQueryCount]['return'] = $aMatch[2];
             } else {
-                self::$aSqlData[$count]['time'] = 0;
-                self::$aSqlData[$count]['rows'] = 0;
+                self::$aSqlData[$iQueryCount]['time'] = 0;
+                self::$aSqlData[$iQueryCount]['return'] = '';
             }
         } else {
-            $count++;
+            // This is query. So let's clean it to pretty view
+
             $aReplace = array(
                 "#\s+#u" => ' ',
                 '#[,.]#u' => '\1 '
             );
-            self::$aSqlData[$count]['query'] = trim(preg_replace(array_keys($aReplace), array_values($aReplace), $sql));
+
+            $sMessage = preg_replace(array_keys($aReplace), array_values($aReplace), $sMessage);
+
+            $iQueryCount++;
+            self::$aSqlData[$iQueryCount]['query'] = trim($sMessage);
         }
     }
 
     /**
      * Get SQL data from temp storage
      *
-     * @return type
+     * @return array
      */
     public static function getSqlData() {
         return self::$aSqlData;
     }
 
 }
+
+// Подключаем необходимые плагину функции
+ include_once 'include/dt_functions.php';
