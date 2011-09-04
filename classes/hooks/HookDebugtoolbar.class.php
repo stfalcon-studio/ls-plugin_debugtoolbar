@@ -16,13 +16,14 @@ class PluginDebugToolbar_HookDebugToolbar extends Hook
 {
 
     public function RegisterHook() {
-        /**
-         * Хук для вставки HTML кода
-         */
-        if ($oUserCurrent = $this->User_GetUserCurrent() and $oUserCurrent->isAdministrator()) {
-            $this->AddHook('engine_init_complete', 'AddAssets');
-            $this->AddHook('template_body_end', 'RenderToolbar', __CLASS__, -99999);
-        }
+
+        // Подключать плагин, только администраторам
+        if (!($oUserCurrent = $this->User_GetUserCurrent()) || !$oUserCurrent->isAdministrator())
+            return;
+
+        // Хуки плагина
+        $this->AddHook('engine_init_complete', 'AddAssets');
+        $this->AddHook('template_body_end', 'RenderToolbar', __CLASS__, -99999);
     }
 
     /**
@@ -35,6 +36,7 @@ class PluginDebugToolbar_HookDebugToolbar extends Hook
         $this->Viewer_AppendScript($sPluginPath . 'js/sh_main.min.js');
         $this->Viewer_AppendScript($sPluginPath . 'js/sh_sql.min.js');
         $this->Viewer_AppendScript($sPluginPath . 'js/sh_php.min.js');
+        //$this->Viewer_AppendScript($sPluginPath . 'js/mootools-1.2.5.1-more.js');
         $this->Viewer_AppendScript($sPluginPath . 'js/debugtoolbar.js');
     }
 
@@ -101,12 +103,19 @@ class PluginDebugToolbar_HookDebugToolbar extends Hook
             '$_GET' => $_GET,
             '$_SESSION' => $_SESSION,
             '$_COOKIE' => $_COOKIE,
-            //'$_ENV' => $_ENV,
-            //'$_SERVER' => $_SERVER
+                //'$_ENV' => $_ENV,
+                //'$_SERVER' => $_SERVER
         );
+
+        /**
+         * Данные роутера
+         */
+        $sRouter = Router::GetActionClass() . '::' . Router::GetActionEvent() . '(' . join(', ', Router::GetParams()) . ')';
         /**
          * Загружаем переменные в шаблон
          */
+        $this->Viewer_Assign('sRouter', $sRouter);
+        $this->Viewer_Assign('sCurrentLang', $this->Lang_GetLang());
         $this->Viewer_Assign('aRamUsage', $aRamUsage);
         $this->Viewer_Assign('aAdditionalInfo', $aAdditionalInfo);
         $this->Viewer_Assign('aSqlDetails', $aSqlDetails);

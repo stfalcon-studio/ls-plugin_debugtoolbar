@@ -5,6 +5,8 @@
         <li class="dt-item-pagetime">{$iTimeFull}s</li>
         <li class="dt-item-ramusage">{$aRamUsage.total} (Peak: {$aRamUsage.peak})</li>
         <li class="dt-item-globals"><a href="#PhpGlobals">PHP GLOBALS</a></li>
+        <li class="dt-item-route" title="{$aLang.dt_router_data}">{$sRouter}</li>
+        <li class="dt-item-language" title="{$aLang.dt_current_lang}">{$sCurrentLang}</li>
     </ul>
     <!-- MySQL details information-->
     <div id="dtItemMysql" class="dt-details" style="display: none;">
@@ -50,4 +52,5 @@
             </dl>
         </div>
     </div>
+    <span id="dtClose" title="{$aLang.dt_close_panel}"></span>
 </div>
