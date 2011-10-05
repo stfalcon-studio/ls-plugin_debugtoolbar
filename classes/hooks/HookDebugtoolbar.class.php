@@ -7,12 +7,12 @@
  * @Description: Shows some technical and debug information of Livestreet
  * @Author: stfalcon-studio
  * @Author URI: http://stfalcon.com
- * @LiveStreet Version: 0.4.2
+ * @LiveStreet Version: 0.5
  * @License: GNU GPL v2, http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * ----------------------------------------------------------------------------
  */
 
-class PluginDebugToolbar_HookDebugToolbar extends Hook
+class PluginDebugtoolbar_HookDebugToolbar extends Hook
 {
 
     public function RegisterHook() {
@@ -57,7 +57,7 @@ class PluginDebugToolbar_HookDebugToolbar extends Hook
         $aStats['total']['time'] = $aStats['sql']['time'] + $aStats['cache']['time'];
 
         // Детальная информация о запросах к БД
-        $aSqlDetails = PluginDebugToolbar::getSqlData();
+        $aSqlDetails = PluginDebugtoolbar::getSqlData();
 
         $aAdditionalInfo = array(
             'mysql' => $this->Lang_Get('dt_col_mysql_additional', array(
@@ -103,8 +103,8 @@ class PluginDebugToolbar_HookDebugToolbar extends Hook
             '$_GET' => $_GET,
             '$_SESSION' => $_SESSION,
             '$_COOKIE' => $_COOKIE,
-                //'$_ENV' => $_ENV,
-                //'$_SERVER' => $_SERVER
+            '$_ENV' => $_ENV,
+            '$_SERVER' => $_SERVER
         );
 
         /**

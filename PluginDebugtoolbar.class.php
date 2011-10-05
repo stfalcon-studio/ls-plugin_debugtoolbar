@@ -7,7 +7,7 @@
  * @Description: Shows some technical and debug information of Livestreet
  * @Author: stfalcon-studio
  * @Author URI: http://stfalcon.com
- * @LiveStreet Version: 0.4.2
+ * @LiveStreet Version: 0.5
  * @License: GNU GPL v2, http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * ----------------------------------------------------------------------------
  */
@@ -17,35 +17,11 @@ if (!class_exists('Plugin')) {
     die('Hacking attemp!');
 }
 
-class PluginDebugToolbar extends Plugin
+class PluginDebugtoolbar extends Plugin
 {
-
-    public function __construct() {
-
-        parent::__construct();
-
-        // Включаем логирование запросов, для того чтобы их позже вывести в панель
-        Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugToolbar::setSqlData');
-    }
 
     // SQL queries storage
     protected static $aSqlData = array();
-
-    /**
-     * Plugin activation
-     *
-     * @return boolean
-     */
-    public function Activate() {
-        return true;
-    }
-
-    /**
-     * Plugin initialization
-     */
-    public function Init() {
-        
-    }
 
     /**
      * Store SQL data into temp storage
@@ -53,7 +29,8 @@ class PluginDebugToolbar extends Plugin
      * @param object $oDb
      * @param string $sMessage
      */
-    public static function setSqlData($oDb, $sMessage) {
+    public static function setSqlData($oDb, $sMessage)
+    {
         static $iQueryCount = 0;
 
         /**
@@ -90,11 +67,51 @@ class PluginDebugToolbar extends Plugin
      *
      * @return array
      */
-    public static function getSqlData() {
+    public static function getSqlData()
+    {
         return self::$aSqlData;
+    }
+
+    /**
+     * Указанные в массивы наследования будут переданы движку автоматически
+     * перед инициализацией плагина
+     */
+    public $aInherits = array(
+        'module' => array('ModuleViewer')
+    );
+
+    /**
+     * Конструктор плагина
+     */
+    public function __construct()
+    {
+
+        parent::__construct();
+
+        // Включаем логирование запросов, для того чтобы их позже вывести в панель
+        Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugtoolbar::setSqlData');
+    }
+
+    /**
+     * Plugin activation
+     *
+     * @return boolean
+     */
+    public function Activate()
+    {
+        $this->Cache_Clean();
+        return true;
+    }
+
+    /**
+     * Plugin initialization
+     */
+    public function Init()
+    {
+        
     }
 
 }
 
 // Подключаем необходимые плагину функции
- include_once 'include/dt_functions.php';
+include_once 'include/dt_functions.php';

@@ -12,22 +12,18 @@
  * ----------------------------------------------------------------------------
  */
 
-/**
- * Форматирование размера в байтах
- *
- * @param int $iSize
- * @param string $sFormat - %01.2f %s
- * @return string
- */
-function formatBytes($iSize, $sFormat = NULL) {
+class PluginDebugtoolbar_ModuleViewer extends PluginDebugtoolbar_Inherit_ModuleViewer
+{
 
-    // Format string
-    $sFormat = ($sFormat === NULL) ? '%01.2f %s' : (string) $sFormat;
+    /**
+     * Инициализация модуля
+     *
+     */
+    public function Init()
+    {
+        parent::Init();
+        // Переопределяем шаблон Smarty Debug Console
+        $this->oSmarty->debug_tpl = Plugin::GetTemplatePath(__CLASS__) . 'smarty.debug.tpl';
+    }
 
-    $units = array('B', 'kB', 'MB', 'GB', 'TB', 'PB');
-
-    $iUnit = ($iSize > 0) ? floor(log($iSize, 1024)) : 0;
-
-    return sprintf($sFormat, $iSize / pow(1024, $iUnit), $units[$iUnit]);
 }
-
