@@ -15,11 +15,25 @@
 class PluginDebugtoolbar_HookDebugToolbar extends Hook
 {
 
-    public function RegisterHook() {
+    public function RegisterHook()
+    {
+        $oUserCurrent = $this->User_GetUserCurrent();
 
         // Подключать плагин, только администраторам
-        if (!($oUserCurrent = $this->User_GetUserCurrent()) || !$oUserCurrent->isAdministrator())
-            return;
+        switch ((int) Config::Get('plugin.debugtoolbar.access_level')) {
+            case 0:
+                // Allow for all
+                break;
+            case 1:
+                // Allow only for registered
+                if (!$oUserCurrent)
+                    return;
+                break;
+            default:
+                // Allow only for administrators
+                if (!$oUserCurrent || (!$oUserCurrent->isAdministrator()))
+                    return;
+        }
 
         // Хуки плагина
         $this->AddHook('engine_init_complete', 'AddAssets');
@@ -29,7 +43,8 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
     /**
      * Add plugin assets to template
      */
-    public function AddAssets() {
+    public function AddAssets()
+    {
         $sPluginPath = Plugin::GetTemplatePath(__CLASS__);
         $this->Viewer_AppendStyle($sPluginPath . 'css/style.css');
         $this->Viewer_AppendStyle($sPluginPath . 'css/sh_style.css');
@@ -45,7 +60,8 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
      *
      * @return type
      */
-    public function RenderToolbar() {
+    public function RenderToolbar()
+    {
         $oEngine = Engine::getInstance();
 
         // Статистика запросов к БД
@@ -84,7 +100,9 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
                 $sRowStyle = 'normal';
             }
             $sValue['rowStyle'] = $sRowStyle;
-            $sValue['time_text'] = ($iTime ? $iTime : '< 1') . ' ms';
+            $sValue['time_text'] = ($iTime
+                            ? $iTime
+                            : '< 1') . ' ms';
         }
 
         // Время создания страницы
@@ -107,10 +125,13 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
             '$_SERVER' => $_SERVER
         );
 
+        if ($sActionEvent = Router::GetActionEvent()) {
+            $sActionEvent = 'index';
+        }
         /**
          * Данные роутера
          */
-        $sRouter = Router::GetActionClass() . '::' . Router::GetActionEvent() . '(' . join(', ', Router::GetParams()) . ')';
+        $sRouter = Router::GetActionClass() . '::' . $sActionEvent . '(' . join(', ', Router::GetParams()) . ')';
         /**
          * Загружаем переменные в шаблон
          */

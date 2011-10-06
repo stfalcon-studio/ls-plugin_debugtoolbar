@@ -19,7 +19,7 @@ if (!class_exists('Plugin')) {
 
 class PluginDebugtoolbar extends Plugin
 {
-
+  
     // SQL queries storage
     protected static $aSqlData = array();
 
