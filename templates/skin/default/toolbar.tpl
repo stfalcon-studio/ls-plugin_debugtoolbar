@@ -6,6 +6,9 @@
             <div class="dtb-sub">
                 <h3><span class="dtb-close">&ndash;</span>О плагине...</h3>
 				<ul>
+                    <li><a href="#">Настройки</a></li>
+                    <li><a href="https://github.com/stfalcon-studio/ls-plugin_debugtoolbar" target="_blank">Проверить обновление</a></li>
+                    <li><a href="http://livestreet.ru/blog/addons/9171.html" target="_blank">Обсуждение</a></li>
                     <li><span>О LiveStreet</span></li>
                     <li><a href="http://livestreet.ru" target="_blank">Оффициальный сайт LiveStreet</a></li>
                 </ul>
@@ -97,6 +100,9 @@
                 <ul id="DTBTplList">
                     <li><p class="dtb-center">Не удалось получить сведения о шаблонах.</p></li>
                 </ul>
+                <div class="dtb-fieldset">
+					<label><input type="checkbox" id="DTBSwTplFinder" value="1"/>Включить подсветку шаблонов</label>
+				</div>
             </div>
 		</li>
         <li title="{$aLang.dt_hide_toolbar}" class="dtb-hide-toolbar"><span class="dtb-close">&nbsp;</span></li>

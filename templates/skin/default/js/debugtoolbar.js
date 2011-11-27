@@ -32,7 +32,7 @@ ls.debugtoolbar = (function ($) {
 			ls.debugtoolbar.hide();
 		});
 		
-		// Restore the previous state of toolbar
+		// Restore the previous status of toolbar
 		(($.cookie('dtb-display') || 1) == 1) ? ls.debugtoolbar.show() : ls.debugtoolbar.hide();
 		
 		this.adjustPanel();
@@ -53,6 +53,9 @@ ls.debugtoolbar = (function ($) {
 		this.doTableSearch('database');
 	
 		$(this.options.tabs+">li").tipTip();
+		
+		// Create element finder handler
+		this.setOverlayElement($('#DTBSwTplFinder'));
 	};
 	
 	// Toolbar's buttons event
@@ -87,14 +90,37 @@ ls.debugtoolbar = (function ($) {
 	};
 	
 	// Run common operations after toolbar display changes
-	this.triggerDisplay = function(state){
-		$.cookie('dtb-display',state,{
+	this.triggerDisplay = function(status){
+		$.cookie('dtb-display',status,{
 			path: "/"
 		});
-		this.options.overlayElement = state;
+		if(status) {
+			this.options.overlayElement = $('#DTBSwTplFinder').is(':checked');
+		}else{
+			this.options.overlayElement = 0;
+		}
 		this.adjustPanel();
 		return false;
 	};
+	
+	// Set element highliter
+	this.setOverlayElement = function(btn){
+		var status = $.cookie('dtb-overlay-element') || 0;
+		if(status) {
+			btn.attr('checked','checked');
+		}
+		
+		btn.change(function(){
+			status = this.checked ? 1 : 0;
+			$.cookie('dtb-overlay-element',status,{
+				path: "/"
+			});
+			ls.debugtoolbar.options.overlayElement = status;
+			return false;
+		});
+		
+		this.options.overlayElement = $(this.options.toolbar).is(':hidden') ? 0 : status;
+	}
 	
 	//Adjust panel height
 	this.adjustPanel = function(){
@@ -220,7 +246,7 @@ ls.debugtoolbar = (function ($) {
 			display: 'none', 
 			position: 'absolute', 
 			zIndex: 65000, 
-			background:'rgba(255, 0, 0, .3)'
+			background:'rgba(50, 100, 50, .3)'
 		}) .appendTo('body')
 		.mouseout(function(){
 			$(this).hide();
@@ -234,7 +260,7 @@ ls.debugtoolbar = (function ($) {
 		var lastTarget, last = +new Date;
 		$('body').mousemove(function(e){
 			if(!ls.debugtoolbar.options.overlayElement){
-				if(box.is(':visible')) box.hide();	
+			//	if(box.is(':visible')) box.hide();	
 				return false;
 			} 
 			var offset, el = e.target;
