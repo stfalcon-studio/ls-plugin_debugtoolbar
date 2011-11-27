@@ -138,7 +138,7 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
 		$this->Viewer_Assign('aStats', $aStats);
 		$this->Viewer_Assign('iTimeFull', $iTimeFull);
 		$this->Viewer_Assign('LS_VERSION', LS_VERSION);
-		$this->Viewer_Assign('aBars', Config::Get('plugin.debugtoolbar.bars'));
+		$this->Viewer_Assign('aPanels', Config::Get('plugin.debugtoolbar.panels'));
 		return $this->Viewer_Fetch(Plugin::GetTemplatePath(__CLASS__) . 'toolbar.tpl');
 	}
 

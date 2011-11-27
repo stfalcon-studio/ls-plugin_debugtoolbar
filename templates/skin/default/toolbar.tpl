@@ -76,7 +76,7 @@
 				</div>
 			</div>
 		</li>
-		{if $aBars.smarty}
+		{if $aPanels.smarty}
 			<li>
 				<a href="#"><span class="dtb-ico dtb-ico-smarty">Smarty Debug</span></a>
 				<div class="dtb-sub dtb-sub-wide">
