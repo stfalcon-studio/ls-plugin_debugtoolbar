@@ -77,15 +77,10 @@ class PluginDebugtoolbar extends Plugin
 	 */
 	public function __construct()
 	{
-
 		parent::__construct();
 
 		// Включаем логирование запросов, для того чтобы их позже вывести в панель
 		Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugtoolbar::setSqlData');
-
-		// Активируем настройки шаблонизатора для нужд плагина
-		$this->SetupSmarty();
-		
 	}
 
 	/**
@@ -104,16 +99,8 @@ class PluginDebugtoolbar extends Plugin
 	 */
 	public function Init()
 	{
-		
-	}
-
-	/**
-	 * Устанавливает собственные настройки для шаблонизатора
-	 */
-	protected function SetupSmarty()
-	{
 		$oSmarty = $this->Viewer_GetSmartyObject();
-		
+
 		// Переопределяем шаблон отладчика Smarty
 		$oSmarty->debug_tpl = Plugin::GetTemplatePath(__CLASS__) . 'smarty.debug.tpl';
 	}
