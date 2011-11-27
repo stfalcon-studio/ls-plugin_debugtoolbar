@@ -2,12 +2,8 @@
 
 /* ---------------------------------------------------------------------------
  * @Plugin Name: Debug Toolbar
- * @Plugin Id: debugtoolbar
- * @Plugin URI:
- * @Description: Shows some technical and debug information of Livestreet
- * @Author: stfalcon-studio
- * @Author URI: http://stfalcon.com
- * @LiveStreet Version: 0.5
+ * @Plugin URI:  https://github.com/stfalcon-studio/ls-plugin_debugtoolbar
+ * @Author: Web studio stfalcon.com
  * @License: GNU GPL v2, http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * ----------------------------------------------------------------------------
  */
@@ -16,6 +12,9 @@
 if (!class_exists('Plugin')) {
 	die('Hacking attemp!');
 }
+
+// Подключаем необходимые плагину функции
+include_once 'include/dt_functions.php';
 
 class PluginDebugtoolbar extends Plugin
 {
@@ -39,26 +38,26 @@ class PluginDebugtoolbar extends Plugin
 		 * @TODO: Найти способ нормально получить данные о запросах из DbSimple.
 		 */
 		if (false !== strpos($sMessage, '--')) {
-			// This is result: -- 0 ms; returned 0 row(s)
+			// Result data: -- 0 ms; returned 0 row(s)
 			if (preg_match("/(\d+).+returned\s+(.*)/u", $sMessage, $aMatch)) {
 				self::$aSqlData[$iQueryCount]['time'] = $aMatch[1];
-				self::$aSqlData[$iQueryCount]['return'] = $aMatch[2];
 			} else {
 				self::$aSqlData[$iQueryCount]['time'] = 0;
-				self::$aSqlData[$iQueryCount]['return'] = '';
 			}
 		} else {
-			// This is query. So let's clean it to pretty view
-
+			// SQL query clean
 			$aReplace = array(
-				"#\s+#u" => ' ',
-				'#[,.]#u' => '\1 '
+				"/\s+/u" => ' ',
+				"/(\s+)?([\)\,\=])(\s+)?/u" => '\2 ',
+				"/(\()/u" => ' \1',
+				"/([=])/u" => ' \1 ',
+				"/[;]/u" => '',
 			);
 
-			$sMessage = preg_replace(array_keys($aReplace), array_values($aReplace), $sMessage);
+			$sMessage = preg_replace(array_keys($aReplace), array_values($aReplace), $sMessage) . ';';
 
 			$iQueryCount++;
-			self::$aSqlData[$iQueryCount]['query'] = trim($sMessage);
+			self::$aSqlData[$iQueryCount]['query'] = $sMessage;
 		}
 	}
 
@@ -85,7 +84,6 @@ class PluginDebugtoolbar extends Plugin
 
 		// Активируем настройки шаблонизатора для нужд плагина
 		$this->SetupSmarty();
-		
 	}
 
 	/**
@@ -96,6 +94,19 @@ class PluginDebugtoolbar extends Plugin
 	public function Activate()
 	{
 		$this->Cache_Clean();
+		$this->Viewer_GetSmartyObject()->clearCompiledTemplate();
+		return true;
+	}
+
+	/**
+	 * Plugin deactivation
+	 *
+	 * @return boolean
+	 */
+	public function Deactivate()
+	{
+		$this->Cache_Clean();
+		$this->Viewer_GetSmartyObject()->clearCompiledTemplate();
 		return true;
 	}
 
@@ -113,12 +124,20 @@ class PluginDebugtoolbar extends Plugin
 	protected function SetupSmarty()
 	{
 		$oSmarty = $this->Viewer_GetSmartyObject();
-		
+
 		// Переопределяем шаблон отладчика Smarty
 		$oSmarty->debug_tpl = Plugin::GetTemplatePath(__CLASS__) . 'smarty.debug.tpl';
+
+		// Добавляем директорию Smarty - плагинов
+		$oSmarty->addPluginsDir(dirname(__FILE__) . '/classes/modules/viewer/plugs');
+
+		if ((bool) Config::Get('plugin.debugtoolbar.template.force_compile')) {
+			// Сбрасываем кэш скомпилированных шаблонов
+			$oSmarty->clearCompiledTemplate();
+		}
+
+		// Добавляем предварительный фильтр спец. разметки
+		$oSmarty->loadFilter('pre', 'markup');
 	}
 
 }
-
-// Подключаем необходимые плагину функции
-include_once 'include/dt_functions.php';
