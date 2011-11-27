@@ -7,7 +7,17 @@ ls.debugtoolbar = (function ($) {
 		toolbar_display: 1,
 		tabs: '#DTBTabs',
 		usedTemplates: {},
-		overlayElement: 1
+		overlayElement: 0,
+		overlayBox:  $('<div class="dtb-overlay">').css({
+			display: 'none', 
+			position: 'absolute', 
+			zIndex: 65000, 
+			background:'rgba(50, 100, 50, .3)'
+		}),
+		overlayBoxTagInfo: $('<div class="dtb-taginfo"/>').css({
+			position: 'absolute', 
+			zIndex: 65000
+		})
 		
 	}
 	
@@ -52,10 +62,13 @@ ls.debugtoolbar = (function ($) {
 		this.doStatusFilter('database', $('div.dtb-switcher>a'));
 		this.doTableSearch('database');
 	
-		$(this.options.tabs+">li").tipTip();
+		$(this.options.tabs+">li>a").tipTip();
 		
 		// Create element finder handler
 		this.setOverlayElement($('#DTBSwTplFinder'));
+		this.setElementFinder($('#DTBTplList'));
+		this.options.overlayBox.appendTo('body');
+		this.options.overlayBoxTagInfo.appendTo(this.options.overlayBox);
 	};
 	
 	// Toolbar's buttons event
@@ -76,6 +89,22 @@ ls.debugtoolbar = (function ($) {
 		});
 	};
 	
+	// Sorts assoc array
+	this.sortObj = function (arr){
+		// Setup Arrays
+		var sortedKeys = [], sortedObj = {};
+		// Separate keys and sort them
+		for (var i in arr){
+			sortedKeys.push(i);
+		}
+		sortedKeys.sort();
+		// Reconstruct sorted obj based on keys
+		for (var i in sortedKeys){
+			sortedObj[sortedKeys[i]] = arr[sortedKeys[i]];
+		}
+		return sortedObj;
+	}
+
 	this.show = function(){
 		$(this.options.toolbar).show();
 		$(this.options.toolbar_show).hide();
@@ -91,13 +120,20 @@ ls.debugtoolbar = (function ($) {
 	
 	// Run common operations after toolbar display changes
 	this.triggerDisplay = function(status){
+		var panelBtn = $('li.dtb-panel-tpl>a>span.dtb-ico');
 		$.cookie('dtb-display',status,{
 			path: "/"
 		});
-		if(status) {
-			this.options.overlayElement = $('#DTBSwTplFinder').is(':checked');
+		
+		if(status == 1) {
+			this.options.overlayElement = $('#DTBSwTplFinder').is(':checked') ? 1 : 0;
 		}else{
 			this.options.overlayElement = 0;
+		}
+		if(this.options.overlayElement){
+			if(!panelBtn.hasClass('active')) panelBtn.addClass('active');
+		}else{
+			panelBtn.removeClass('active');
 		}
 		this.adjustPanel();
 		return false;
@@ -105,21 +141,63 @@ ls.debugtoolbar = (function ($) {
 	
 	// Set element highliter
 	this.setOverlayElement = function(btn){
+		var panelBtn = $('li.dtb-panel-tpl>a>span.dtb-ico');
 		var status = $.cookie('dtb-overlay-element') || 0;
-		if(status) {
+		if(status == 1) {
 			btn.attr('checked','checked');
+			panelBtn.addClass('active');
 		}
-		
+
 		btn.change(function(){
-			status = this.checked ? 1 : 0;
+			if(this.checked){
+				status =  1;
+				if(!panelBtn.hasClass('active')) panelBtn.addClass('active');
+			}else{
+				status =  0;
+				panelBtn.removeClass('active');
+			}
 			$.cookie('dtb-overlay-element',status,{
 				path: "/"
 			});
 			ls.debugtoolbar.options.overlayElement = status;
 			return false;
 		});
-		
 		this.options.overlayElement = $(this.options.toolbar).is(':hidden') ? 0 : status;
+	}
+	
+	// Set element finder
+	this.setElementFinder = function(list){
+		var dtOptions = ls.debugtoolbar.options;
+		list.find('li>a').click(function(){
+			var path = $(this).text();
+			var el = $('[tpl="'+path+'"]');
+			if(el.length){
+				if(el.is(':visible')){
+					// Отключаем автоподсветку эелемента
+					dtOptions.overlayElement = 0;
+					$('#DTBSwTplFinder').removeAttr('checked');
+					// Фиксируем подсветку, установив спец. класс
+					dtOptions.overlayBox.addClass('dtb-overlay-clicked').show();   
+					ls.debugtoolbar.reDrawOverlay(el);
+					// Переместимся к выбранному элементу
+					var elTop = el.offset().top - 20;
+					if(elTop < 0) elTop = 0;
+					$(window).scrollTop(elTop,'slow');
+				}else{
+					if(dtOptions.overlayBox.hasClass('dtb-overlay-clicked')){
+						dtOptions.overlayBox.removeClass('dtb-overlay-clicked').hide();   
+					}
+					ls.msg.error('Внимание','Этот элемент скрыт!');
+				}
+				$(dtOptions.tabs+" div.dtb-sub").hide(); 
+				$(dtOptions.tabs+">li>a").removeClass('active'); 
+				$('li.dtb-panel-tpl>a>span.dtb-ico').removeClass('active');
+			}else{
+				ls.msg.error('Error','Please try again later');
+			}
+			return false;
+		});
+
 	}
 	
 	//Adjust panel height
@@ -220,96 +298,87 @@ ls.debugtoolbar = (function ($) {
 		});
 	}
 	
+	// Show overlay over element
+	this.reDrawOverlay = function(el){
+		if(el.length){
+			var offset = el.offset();
+			this.options.overlayBox.css({
+				width:  el.outerWidth()  - 2, 
+				height: el.outerHeight() - 2, 
+				left:   offset.left, 
+				top:    offset.top 
+			});
+				
+			var boxOffset = this.options.overlayBox.offset();
+			this.options.overlayBoxTagInfo.text(el.attr('tpl'));
+			var boxTagInfoX = 1;
+			var boxTagInfoY = this.options.overlayBoxTagInfo.outerHeight();
+				
+			boxTagInfoX = -boxTagInfoX;
+
+			if((boxOffset.top - boxTagInfoY) > (boxTagInfoY * 2)){
+				boxTagInfoY = -boxTagInfoY;
+			}else if($(window).outerHeight() < this.options.overlayBox.outerHeight()){
+				boxTagInfoY = 0;
+			}else{
+				boxTagInfoY = this.options.overlayBox.outerHeight()-1;
+			}
+				
+			this.options.overlayBoxTagInfo.css({
+				left:   boxTagInfoX, 
+				top:    boxTagInfoY 
+			});
+		}
+	}
+	
 	this.findUsedTemplates = function(blocks){
-		var used_templates = [], li = '';
+		var used_templates = {}, li = '', visibility = 1;
 		$.each(blocks, function(i, item){
-			var tpl = item.getAttribute('tpl');
+			var tpl = $(item).attr('tpl');
 			if(tpl){
-				used_templates[i] = tpl;
+				visibility = ($(item).css('display') == "none") ? 0 : 1;
+				used_templates[tpl] = visibility;
 			}
 		});
-		used_templates = $.unique(used_templates);
-		used_templates.sort(function(a, b) {
-			return (a > b) ? 1 : ((a < b) ? -1 : 0);
-		});
-		this.options.usedTemplates = used_templates;
+
+		this.options.usedTemplates = this.sortObj(used_templates);
 		
-		$.each(this.options.usedTemplates, function(i, item){
-			li += '<li><a href="#">'+item+'</a></li>'
+		$.each(this.options.usedTemplates, function(tpl, visibility){
+			li += '<li class="dtb-visibility-'+visibility+'"><a href="#">'+tpl+'</a></li>'
 		});
         
 		if(li){
 			$('#DTBTplList').html('').append(li);
 		}
 
-		var box = $('<div class="dtb-overlay">').css({
-			display: 'none', 
-			position: 'absolute', 
-			zIndex: 65000, 
-			background:'rgba(50, 100, 50, .3)'
-		}) .appendTo('body')
-		.mouseout(function(){
-			$(this).hide();
-		});
-		
-		var boxTagInfo = $('<div class="dtb-taginfo"/>').css({
-			position: 'absolute', 
-			zIndex: 65000
-		}).appendTo(box);
-
 		var lastTarget, last = +new Date;
-		$('body').mousemove(function(e){
-			if(!ls.debugtoolbar.options.overlayElement){
-			//	if(box.is(':visible')) box.hide();	
+		var dtOptions = this.options;
+		$('body').bind('mousemove',function(e){
+			if(dtOptions.overlayElement == 0){
+				if(dtOptions.overlayBox.is(':visible') && !dtOptions.overlayBox.hasClass('dtb-overlay-clicked')) {
+					dtOptions.overlayBox.hide();	
+				}
 				return false;
 			} 
-			var offset, el = e.target;
+			var el = e.target;
 			var now = +new Date;
 			if (now-last < 25) 
 				return;
 			last = now;
 			if ((el === document.body) || (el.id === 'DTB') || ($(el).parents('#DTB').length)) {
-				box.hide(); 
+				dtOptions.overlayBox.hide(); 
 				return;
 			} else if (el.className === 'dtb-overlay') {
-				box.hide();
+				dtOptions.overlayBox.hide();
 				el = document.elementFromPoint(e.clientX, e.clientY);
 			}
-			box.show();   
+			dtOptions.overlayBox.show();   
 
 			if (el === lastTarget) 
 				return;
 			lastTarget = el;
 			el = $(el).closest('[tpl]');
-			if(el.length){
-				offset = el.offset();
-				box.css({
-					width:  el.outerWidth()  - 2, 
-					height: el.outerHeight() - 2, 
-					left:   offset.left, 
-					top:    offset.top 
-				});
-				
-				boxOffset = box.offset();
-				boxTagInfo.text(el.attr('tpl'));
-				var boxTagInfoX = 1;
-				var boxTagInfoY = boxTagInfo.outerHeight();
-				
-				boxTagInfoX = -boxTagInfoX;
-
-				if((boxOffset.top - boxTagInfoY) > (boxTagInfoY * 2)){
-					boxTagInfoY = -boxTagInfoY;
-				}else if($(window).outerHeight() < box.outerHeight()){
-					boxTagInfoY = 0;
-				}else{
-					boxTagInfoY = box.outerHeight()-1;
-				}
-				
-				boxTagInfo.css({
-					left:   boxTagInfoX, 
-					top:    boxTagInfoY 
-				});
-			}
+			ls.debugtoolbar.reDrawOverlay(el);
 		});
 	};
 	return this;

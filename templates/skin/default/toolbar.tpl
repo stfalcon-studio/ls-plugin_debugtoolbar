@@ -15,8 +15,8 @@
             </div>
         </li>
 		<!-- Database panel -->
-		<li title="{$sMysqlDescription|escape}">
-			<a href="#"><span class="dtb-ico dtb-ico-database">{$aStats.total.count} ({$aStats.total.time}s)</span></a>
+		<li>
+			<a title="{$sMysqlDescription|escape}" href="#"><span class="dtb-ico dtb-ico-database">{$aStats.total.count} ({$aStats.total.time}s)</span></a>
 			<div class="dtb-sub dtb-sub-wide">
 				<h3><span class="dtb-close"> &ndash; </span>{$aLang.dt_database_header}</h3>
 				<div class="dtb-sub-inner">
@@ -59,7 +59,7 @@
 			</div>
 		</li>
         <li><span class="dtb-ico dtb-ico-pagetime">{$iTimeFull}s</span></li>
-		<li title="{$aLang.dt_ramusage_description}"><span class="dtb-ico dtb-ico-ramusage">{$aRamUsage.total} (Peak: {$aRamUsage.peak})</span></li>
+		<li><span  title="{$aLang.dt_ramusage_description}" class="dtb-ico dtb-ico-ramusage">{$aRamUsage.total} (Peak: {$aRamUsage.peak})</span></li>
         <li>
 			<a href="#"><span class="dtb-ico dtb-ico-globals">PHP GLOBALS</span></a>
 			<div class="dtb-sub dtb-sub-wide">
@@ -91,8 +91,8 @@
 				</div>
 			</li>
 		{/if}
-        <li title="{$aLang.dt_router_description}"><span class="dtb-ico dtb-ico-route">{$sRouter}</span></li>
-        <li title="{$aLang.dt_lang_description}"><span class="dtb-ico dtb-ico-language">{$sCurrentLang}</span></li>
+        <li><span title="{$aLang.dt_router_description}" class="dtb-ico dtb-ico-route">{$sRouter}</span></li>
+        <li><span  title="{$aLang.dt_lang_description}" class="dtb-ico dtb-ico-language">{$sCurrentLang}</span></li>
         <li class="dtb-panel-tpl">
 			<a href="#"><span class="dtb-ico dtb-ico-templates">{$aLang.dt_used_templates}</span></a>
             <div class="dtb-sub">
@@ -105,7 +105,7 @@
 				</div>
             </div>
 		</li>
-        <li title="{$aLang.dt_hide_toolbar}" class="dtb-hide-toolbar"><span class="dtb-close">&nbsp;</span></li>
+        <li class="dtb-hide-toolbar"><span title="{$aLang.dt_hide_toolbar}" class="dtb-close">&nbsp;</span></li>
     </ul>
 </div>
 <div id="DTBShow" title="{$aLang.dt_show_toolbar}"><span class="dtb-show-toolbar">&nbsp;</span></div>
