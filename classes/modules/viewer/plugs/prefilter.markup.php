@@ -11,6 +11,11 @@
  * ----------------------------------------------------------------------------
  */
 
+/**
+ * Template of whole page
+ */
+static $sWholeTplFullpath = '';
+
 /*
  * Smarty plugin
  * -------------------------------------------------------------
@@ -25,12 +30,33 @@
  * @param Smarty_Internal_Template $oTemplate
  * @return type 
  */
+
 function smarty_prefilter_markup($sSource, Smarty_Internal_Template $oTemplate)
 {
+	global $sWholeTplFullpath;
+
 	$oConfig = $oTemplate->getTemplateVars('oConfig');
+
+	if ($sWholeTplFullpath == '') {
+		$sWholeTplFullpath = str_replace($oConfig->Get('path.root.server'), '', $oTemplate->getTemplateFilepath());
+		$sWholeTplFullpath = htmlspecialchars($sWholeTplFullpath, ENT_QUOTES, 'UTF-8');
+		return $sSource;
+	}
+
+	$sPattern = '!(<html)([^<]*>)!';
+	if ($sWholeTplFullpath && preg_match($sPattern, $sSource)) {
+		$sSource = preg_replace($sPattern, "$1 tpl=\"{$sWholeTplFullpath}\"$2", $sSource, 1);
+	}
+
 	$sTplFullpath = str_replace($oConfig->Get('path.root.server'), '', $oTemplate->getTemplateFilepath());
 	$sTplFullpath = htmlspecialchars($sTplFullpath, ENT_QUOTES, 'UTF-8');
-	return preg_replace('!(<\w+)([^<]*>)!', "$1 tpl=\"{$sTplFullpath}\"$2", $sSource, 1);
+
+	$sPattern = '!(<body)([^<]*>)!';
+	if (preg_match($sPattern, $sSource)) {
+		return preg_replace($sPattern, "$1 tpl=\"{$sTplFullpath}\"$2", $sSource, 1);
+	} else {
+		return preg_replace('!(<\w+)([^<]*>)!', "$1 tpl=\"{$sTplFullpath}\"$2", $sSource, 1);
+	}
 }
 
 ?>
