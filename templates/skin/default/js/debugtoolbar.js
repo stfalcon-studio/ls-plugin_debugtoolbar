@@ -8,7 +8,7 @@ ls.debugtoolbar = (function ($) {
 		tabs: '#DTBTabs',
 		usedTemplates: {},
 		overlayElement: 0,
-		overlayBox:  $('<div class="dtb-overlay">').css({
+		overlayBox:  $('<div class="dtb-overlay"><div class="dtb-overlay-close"></div></div>').css({
 			display: 'none', 
 			position: 'absolute', 
 			zIndex: 65000, 
@@ -69,6 +69,10 @@ ls.debugtoolbar = (function ($) {
 		this.setElementFinder($('#DTBTplList'));
 		this.options.overlayBox.appendTo('body');
 		this.options.overlayBoxTagInfo.appendTo(this.options.overlayBox);
+		$('div.dtb-taginfo').click(function(){
+			ls.debugtoolbar.options.overlayBox.removeClass('dtb-overlay-clicked').hide();
+			return false;
+		});
 	};
 	
 	// Toolbar's buttons event
@@ -177,7 +181,7 @@ ls.debugtoolbar = (function ($) {
 					dtOptions.overlayElement = 0;
 					$('#DTBSwTplFinder').removeAttr('checked');
 					// Фиксируем подсветку, установив спец. класс
-					dtOptions.overlayBox.addClass('dtb-overlay-clicked').show();   
+					dtOptions.overlayBox.addClass('dtb-overlay-clicked').show();  
 					ls.debugtoolbar.reDrawOverlay(el);
 					// Переместимся к выбранному элементу
 					var elTop = el.offset().top - 20;
