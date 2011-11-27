@@ -81,9 +81,6 @@ class PluginDebugtoolbar extends Plugin
 
 		// Включаем логирование запросов, для того чтобы их позже вывести в панель
 		Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugtoolbar::setSqlData');
-
-		// Активируем настройки шаблонизатора для нужд плагина
-		$this->SetupSmarty();
 	}
 
 	/**
@@ -114,14 +111,6 @@ class PluginDebugtoolbar extends Plugin
 	 * Plugin initialization
 	 */
 	public function Init()
-	{
-		
-	}
-
-	/**
-	 * Устанавливает собственные настройки для шаблонизатора
-	 */
-	protected function SetupSmarty()
 	{
 		$oSmarty = $this->Viewer_GetSmartyObject();
 
