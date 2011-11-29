@@ -31,6 +31,9 @@ class PluginDebugtoolbar extends Plugin
 	 */
 	public static function setSqlData($oDb, $sMessage)
 	{
+		// Call native Logger to store queries log
+		databaseLogger($oDb, $sMessage);
+		
 		static $iQueryCount = 0;
 
 		/**
