@@ -55,7 +55,7 @@ class PluginDebugtoolbar extends Plugin
 
 			$aReplace = array(
 				"#\s+#u" => ' ',
-				'#[,.]#u' => '\1 '
+				"/[;]/u" => '',
 			);
 
 			$sMessage = preg_replace(array_keys($aReplace), array_values($aReplace), $sMessage);
