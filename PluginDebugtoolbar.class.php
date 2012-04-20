@@ -41,25 +41,18 @@ class PluginDebugtoolbar extends Plugin
 		 * будем парсить кашу которая стекается в лог файл.
 		 * @TODO: Найти способ нормально получить данные о запросах из DbSimple.
 		 */
-		if (false !== strpos($sMessage, '--')) {
-			// This is result: -- 0 ms; returned 0 row(s)
-			if (preg_match("/(\d+).+returned\s+(.*)/u", $sMessage, $aMatch)) {
-				self::$aSqlData[$iQueryCount]['time'] = $aMatch[1];
-				self::$aSqlData[$iQueryCount]['return'] = $aMatch[2];
-			} else {
-				self::$aSqlData[$iQueryCount]['time'] = 0;
-				self::$aSqlData[$iQueryCount]['return'] = '';
-			}
+
+        // This is result: -- 0 ms; returned 0 row(s)
+		if (preg_match("/--\s+(\d+).+returned\s+(.*)/u", $sMessage, $aMatch)) {
+            self::$aSqlData[$iQueryCount]['time'] = $aMatch[1];
+            self::$aSqlData[$iQueryCount]['return'] = $aMatch[2];
 		} else {
 			// This is query. So let's clean it to pretty view
-
 			$aReplace = array(
 				"#\s+#u" => ' ',
 				"/[;]/u" => '',
 			);
-
 			$sMessage = preg_replace(array_keys($aReplace), array_values($aReplace), $sMessage);
-
 			$iQueryCount++;
 			self::$aSqlData[$iQueryCount]['query'] = trim($sMessage);
 		}
