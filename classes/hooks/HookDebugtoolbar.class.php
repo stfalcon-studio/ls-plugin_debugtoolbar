@@ -81,7 +81,7 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
 			'cache_count' => $aStats['cache']['count'],
 			'cache_time' => $aStats['total']['time'],
 				));
-		
+
 		$this->Viewer_Assign('sMysqlDescription', $sMysqlDescription);
 		// Зададим стиль для строки вывода запроса
 		foreach ($aSqlDetails as $sKey => &$sValue) {
@@ -127,6 +127,8 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
 		 * Данные роутера
 		 */
 		$sRouter = Router::GetActionClass() . '::' . $sActionEvent . '(' . join(', ', Router::GetParams()) . ')';
+
+                $aCacheData = PluginDebugtoolbar::getCacheData();
 		/**
 		 * Загружаем переменные в шаблон
 		 */
@@ -134,6 +136,7 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
 		$this->Viewer_Assign('sCurrentLang', $this->Lang_GetLang());
 		$this->Viewer_Assign('aRamUsage', $aRamUsage);
 		$this->Viewer_Assign('aSqlDetails', $aSqlDetails);
+		$this->Viewer_Assign('aCacheData', $aCacheData);
 		$this->Viewer_Assign('aPhpGlobals', $aPhpGlobals);
 		$this->Viewer_Assign('aStats', $aStats);
 		$this->Viewer_Assign('iTimeFull', $iTimeFull);
