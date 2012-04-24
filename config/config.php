@@ -25,5 +25,7 @@ return array(
 	),
 	'panels' => array(
 		'smarty' => true,
-	)
+	),
+        'log_cache' => true,
+        'log_cache_backtrace' => false // @todo log trace cache call
 );

@@ -21,6 +21,8 @@ class PluginDebugtoolbar extends Plugin
 
 	// SQL queries storage
 	protected static $aSqlData = array();
+//      // Cache query store
+	protected static $aCacheData = array();
 
 	/**
 	 * Store SQL data into temp storage
@@ -61,7 +63,15 @@ class PluginDebugtoolbar extends Plugin
 		}
 	}
 
-	/**
+        public static function setCacheData($action, $cacheKey)
+        {
+            self::$aCacheData[] = array(
+                'action' => $action,
+                'cacheKey' => $cacheKey
+            );
+        }
+
+        /**
 	 * Get SQL data from temp storage
 	 *
 	 * @return array
@@ -69,6 +79,13 @@ class PluginDebugtoolbar extends Plugin
 	public static function getSqlData()
 	{
 		return self::$aSqlData;
+	}
+        /*
+         * Get Cache data from temp store
+         */
+	public static function getCacheData()
+	{
+            return self::$aCacheData;
 	}
 
 	/**
@@ -81,6 +98,10 @@ class PluginDebugtoolbar extends Plugin
 
 		// Включаем логирование запросов, для того чтобы их позже вывести в панель
 		Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugtoolbar::setSqlData');
+
+                if (Config::Get('plugin.debugtoolbar.log_cache')) {
+                    $this->aInherits['module'][] = 'ModuleCache';
+                }
 	}
 
 	/**
