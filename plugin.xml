@@ -7,9 +7,9 @@
 		<lang name="default">Веб-студия stfalcon.com</lang>
 	</author>
 	<homepage>http://stfalcon.com</homepage>
-	<version>0.1.1</version>
+	<version>0.2.0</version>
 	<requires>
-		<livestreet>0.5</livestreet>
+		<livestreet>1.0</livestreet>
 		<plugins></plugins>
 	</requires>
 	<description>
