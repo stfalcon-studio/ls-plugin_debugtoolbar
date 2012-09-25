@@ -76,13 +76,13 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
         $aSqlDetails = PluginDebugtoolbar::getSqlData();
 
         $aAdditionalInfo = array(
-            'mysql' => $this->Lang_Get('dt_col_mysql_additional', array(
+            'mysql' => $this->Lang_Get('plugin.debugtoolbar.dt_col_mysql_additional', array(
                 'total_count' => $aStats['total']['count'],
                 'total_time' => $aStats['total']['time'],
                 'cache_count' => $aStats['cache']['count'],
                 'cache_time' => $aStats['total']['time'],
             )),
-            'php_globals' => $this->Lang_Get('dt_col_php_globals_additional')
+            'php_globals' => $this->Lang_Get('plugin.debugtoolbar.dt_col_php_globals_additional')
         );
         // Зададим стиль для строки вывода запроса
         foreach ($aSqlDetails as $sKey => &$sValue) {
