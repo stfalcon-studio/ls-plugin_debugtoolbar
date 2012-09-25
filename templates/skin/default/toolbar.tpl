@@ -13,7 +13,7 @@
     <!-- MySQL details information-->
     <div id="dt-database" class="dt-details">
         <div class="dt-details-header">
-            <h2>{$aLang.dt_col_mysql_header}</h2>
+            <h2>{$aLang.plugin.debugtoolbar.dt_col_mysql_header}</h2>
             <p class="dt-description">{$aAdditionalInfo.mysql}</p>
         </div>
         <div class="dt-table-container">
