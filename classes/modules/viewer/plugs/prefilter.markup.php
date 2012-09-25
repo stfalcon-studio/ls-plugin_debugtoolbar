@@ -34,10 +34,9 @@ static $sWholeTplFullpath = '';
 function smarty_prefilter_markup($sSource, Smarty_Internal_Template $oTemplate)
 {
 	global $sWholeTplFullpath;
-       
 	$oConfig = $oTemplate->getTemplateVars('oConfig');
 	if ($sWholeTplFullpath == '') {
-		$sWholeTplFullpath = str_replace($oConfig->Get('path.root.server'), '', $oTemplate->template_resource);
+		$sWholeTplFullpath = str_replace($oConfig->Get('path.root.server'), '', $oTemplate->smarty->_current_file);
 		$sWholeTplFullpath = htmlspecialchars($sWholeTplFullpath, ENT_QUOTES, 'UTF-8');
 		return $sSource;
 	}
@@ -47,7 +46,7 @@ function smarty_prefilter_markup($sSource, Smarty_Internal_Template $oTemplate)
 		$sSource = preg_replace($sPattern, "$1 tpl=\"{$sWholeTplFullpath}\"$2", $sSource, 1);
 	}
 
-	$sTplFullpath = str_replace($oConfig->Get('path.root.server'), '', $oTemplate->template_resource);
+	$sTplFullpath = str_replace($oConfig->Get('path.root.server'), '', $oTemplate->smarty->_current_file);
 	$sTplFullpath = htmlspecialchars($sTplFullpath, ENT_QUOTES, 'UTF-8');
 
 	$sPattern = '!(<body)([^<]*>)!';
