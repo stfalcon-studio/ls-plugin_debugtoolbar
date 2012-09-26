@@ -75,7 +75,7 @@ class PluginDebugtoolbar_HookDebugToolbar extends Hook
 		// Детальная информация о запросах к БД
 		$aSqlDetails = PluginDebugtoolbar::getSqlData();
 
-		$sMysqlDescription = $this->Lang_Get('dt_database_description', array(
+		$sMysqlDescription = $this->Lang_Get('plugin.debugtoolbar.dt_database_description', array(
 			'total_count' => $aStats['total']['count'],
 			'total_time' => $aStats['total']['time'],
 			'cache_count' => $aStats['cache']['count'],
