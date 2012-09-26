@@ -94,8 +94,6 @@ class PluginDebugtoolbar extends Plugin
 	public function __construct()
 	{
 
-//		parent::__construct();
-
 		// Включаем логирование запросов, для того чтобы их позже вывести в панель
 		Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugtoolbar::setSqlData');
 
