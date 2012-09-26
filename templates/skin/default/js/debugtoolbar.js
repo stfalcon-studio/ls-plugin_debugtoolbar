@@ -1,3 +1,4 @@
+
 var ls = ls || {};
 
 ls.debugtoolbar = (function ($) {
@@ -51,7 +52,7 @@ ls.debugtoolbar = (function ($) {
 		});
 		
 		// Hide all sub windows
-		$(this.options.tabs+' div.dtb-sub span.dtb-close').click(function() { 
+		$(this.options.tabs+' div.dtb-sub span.dtb-close').click(function(e) { 
 			$(ls.debugtoolbar.options.tabs+" div.dtb-sub").hide(); 
 			$(ls.debugtoolbar.options.tabs+">li>a").removeClass('active'); 
 		});
@@ -393,3 +394,13 @@ jQuery(window).load(function () {
 });
 
 
+$(document).ready(function(){
+    $(document).click(function(e){
+        var element = $(e.target);        
+        //console.log(element, element.closest('.dtb-sub'));
+        if( $('#DTB').css('display') == 'block' && element.closest('.dtb-sub')[0] == undefined)  
+        {
+                $('.dtb-sub').css('display','none');
+         }
+    });
+});
