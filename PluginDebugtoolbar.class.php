@@ -2,12 +2,8 @@
 
 /* ---------------------------------------------------------------------------
  * @Plugin Name: Debug Toolbar
- * @Plugin Id: debugtoolbar
- * @Plugin URI:
- * @Description: Shows some technical and debug information of Livestreet
- * @Author: stfalcon-studio
- * @Author URI: http://stfalcon.com
- * @LiveStreet Version: 0.5
+ * @Plugin URI:  https://github.com/stfalcon-studio/ls-plugin_debugtoolbar
+ * @Author: Web studio stfalcon.com
  * @License: GNU GPL v2, http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  * ----------------------------------------------------------------------------
  */
@@ -17,11 +13,16 @@ if (!class_exists('Plugin')) {
 	die('Hacking attemp!');
 }
 
+// Подключаем необходимые плагину функции
+include_once 'include/dt_functions.php';
+
 class PluginDebugtoolbar extends Plugin
 {
 
 	// SQL queries storage
 	protected static $aSqlData = array();
+//      // Cache query store
+	protected static $aCacheData = array();
 
 	/**
 	 * Store SQL data into temp storage
@@ -31,9 +32,6 @@ class PluginDebugtoolbar extends Plugin
 	 */
 	public static function setSqlData($oDb, $sMessage)
 	{
-		// Call native Logger to store queries log
-		databaseLogger($oDb, $sMessage);
-		
 		static $iQueryCount = 0;
 
 		/**
@@ -41,24 +39,39 @@ class PluginDebugtoolbar extends Plugin
 		 * будем парсить кашу которая стекается в лог файл.
 		 * @TODO: Найти способ нормально получить данные о запросах из DbSimple.
 		 */
-
-        // This is result: -- 0 ms; returned 0 row(s)
-		if (preg_match("/--\s+(\d+).+returned\s+(.*)/u", $sMessage, $aMatch)) {
-            self::$aSqlData[$iQueryCount]['time'] = $aMatch[1];
-            self::$aSqlData[$iQueryCount]['return'] = $aMatch[2];
+		if (false !== strpos($sMessage, '--')) {
+			// Result data: -- 0 ms; returned 0 row(s)
+			if (preg_match("/(\d+).+returned\s+(.*)/u", $sMessage, $aMatch)) {
+				self::$aSqlData[$iQueryCount]['time'] = $aMatch[1];
+			} else {
+				self::$aSqlData[$iQueryCount]['time'] = 0;
+			}
 		} else {
-			// This is query. So let's clean it to pretty view
+			// SQL query clean
 			$aReplace = array(
-				"#\s+#u" => ' ',
+				"/\s+/u" => ' ',
+				"/(\s+)?([\)\,\=])(\s+)?/u" => '\2 ',
+				"/(\()/u" => ' \1',
+				"/([=])/u" => ' \1 ',
 				"/[;]/u" => '',
 			);
-			$sMessage = preg_replace(array_keys($aReplace), array_values($aReplace), $sMessage);
+
+			$sMessage = preg_replace(array_keys($aReplace), array_values($aReplace), $sMessage) . ';';
+
 			$iQueryCount++;
-			self::$aSqlData[$iQueryCount]['query'] = trim($sMessage);
+			self::$aSqlData[$iQueryCount]['query'] = $sMessage;
 		}
 	}
 
-	/**
+        public static function setCacheData($action, $cacheKey)
+        {
+            self::$aCacheData[] = array(
+                'action' => $action,
+                'cacheKey' => $cacheKey
+            );
+        }
+
+        /**
 	 * Get SQL data from temp storage
 	 *
 	 * @return array
@@ -67,14 +80,26 @@ class PluginDebugtoolbar extends Plugin
 	{
 		return self::$aSqlData;
 	}
+        /*
+         * Get Cache data from temp store
+         */
+	public static function getCacheData()
+	{
+            return self::$aCacheData;
+	}
 
 	/**
 	 * Конструктор плагина
 	 */
 	public function __construct()
 	{
+
 		// Включаем логирование запросов, для того чтобы их позже вывести в панель
 		Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugtoolbar::setSqlData');
+
+                if (Config::Get('plugin.debugtoolbar.log_cache')) {
+                    $this->aInherits['module'][] = 'ModuleCache';
+                }
 	}
 
 	/**
@@ -85,6 +110,19 @@ class PluginDebugtoolbar extends Plugin
 	public function Activate()
 	{
 		$this->Cache_Clean();
+		$this->Viewer_GetSmartyObject()->clearCompiledTemplate();
+		return true;
+	}
+
+	/**
+	 * Plugin deactivation
+	 *
+	 * @return boolean
+	 */
+	public function Deactivate()
+	{
+		$this->Cache_Clean();
+		$this->Viewer_GetSmartyObject()->clearCompiledTemplate();
 		return true;
 	}
 
@@ -97,9 +135,17 @@ class PluginDebugtoolbar extends Plugin
 
 		// Переопределяем шаблон отладчика Smarty
 		$oSmarty->debug_tpl = Plugin::GetTemplatePath(__CLASS__) . 'smarty.debug.tpl';
+
+		// Добавляем директорию Smarty - плагинов
+		$oSmarty->addPluginsDir(dirname(__FILE__) . '/classes/modules/viewer/plugs');
+
+		if ((bool) Config::Get('plugin.debugtoolbar.template.force_compile')) {
+			// Сбрасываем кэш скомпилированных шаблонов
+			$oSmarty->clearCompiledTemplate();
+		}
+
+		// Добавляем предварительный фильтр спец. разметки
+		$oSmarty->loadFilter('pre', 'markup');
 	}
 
 }
-
-// Подключаем необходимые плагину функции
-include_once 'include/dt_functions.php';

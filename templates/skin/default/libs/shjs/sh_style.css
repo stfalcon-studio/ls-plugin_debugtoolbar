@@ -1,10 +1,10 @@
 pre.sh_sourceCode {
-  color: black;
-  font-style: normal;
-  font-weight: normal;
+	color: black;
+	font-style: normal;
+	font-weight: normal;
 }
 
-pre.sh_sourceCode .sh_keyword { color: blue; font-weight: bold; }           /* language keywords */
+pre.sh_sourceCode .sh_keyword { color: blue; font-weight: bold; text-transform: uppercase; } /* language keywords */
 pre.sh_sourceCode .sh_type { color: darkgreen; }                            /* basic types */
 pre.sh_sourceCode .sh_usertype { color: teal; }                             /* user defined types */
 pre.sh_sourceCode .sh_string { color: red; font-family: monospace; }        /* strings and chars */
