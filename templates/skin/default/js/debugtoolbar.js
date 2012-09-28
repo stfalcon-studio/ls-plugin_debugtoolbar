@@ -225,6 +225,8 @@ ls.debugtoolbar = (function ($) {
 			}else{
 				ls.msg.error('Error','Please try again later');
 			}
+            // Disable onmousemove listener for the block finder
+            $('body').unbind('mousemove');
 			return false;
 		});
 
