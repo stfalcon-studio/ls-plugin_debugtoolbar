@@ -21,11 +21,11 @@ return array(
 		 * Принудительная компиляция шаблонов
 		 * ВНИМАНИЕ! Активное состояние данной опции увеличивает время открытия страницы
 		 */
-		'force_compile' => 0
+		'force_compile' => 1
 	),
 	'panels' => array(
 		'smarty' => true,
 	),
-        'log_cache' => true,
-        'log_cache_backtrace' => false // @todo log trace cache call
+    'log_cache' => true,
+    'log_cache_backtrace' => false // @todo log trace cache call
 );
