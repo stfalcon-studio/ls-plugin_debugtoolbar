@@ -1,3 +1,4 @@
+
 var ls = ls || {};
 
 ls.debugtoolbar = (function ($) {
@@ -51,7 +52,7 @@ ls.debugtoolbar = (function ($) {
 		});
 		
 		// Hide all sub windows
-		$(this.options.tabs+' div.dtb-sub span.dtb-close').click(function() { 
+		$(this.options.tabs+' div.dtb-sub span.dtb-close').click(function(e) { 
 			$(ls.debugtoolbar.options.tabs+" div.dtb-sub").hide(); 
 			$(ls.debugtoolbar.options.tabs+">li>a").removeClass('active'); 
 		});
@@ -146,23 +147,48 @@ ls.debugtoolbar = (function ($) {
 	// Set element highliter
 	this.setOverlayElement = function(btn){
 		var panelBtn = $('li.dtb-panel-tpl>a>span.dtb-ico');
-		var status = $.cookie('dtb-overlay-element') || 0;
-		if(status == 1) {
-			btn.attr('checked','checked');
-			panelBtn.addClass('active');
-		}
-
+		var status = 0;
 		btn.change(function(){
 			if(this.checked){
 				status =  1;
 				if(!panelBtn.hasClass('active')) panelBtn.addClass('active');
+                                
+                var lastTarget, last = +new Date;
+                var dtOptions = ls.debugtoolbar.options;
+                // Enable onmousemove listener for the block finder
+                $('body').bind('mousemove',function(e){
+                    if(dtOptions.overlayElement == 0){
+                        if(dtOptions.overlayBox.is(':visible') && !dtOptions.overlayBox.hasClass('dtb-overlay-clicked')) {
+                            dtOptions.overlayBox.hide();	
+                        }
+                        return false;
+                    } 
+                    var el = e.target;
+                    var now = +new Date;
+                    if (now-last < 25) 
+                        return;
+                    last = now;
+                    if ((el === document.body) || (el.id === 'DTB') || ($(el).parents('#DTB').length)) {
+                        dtOptions.overlayBox.hide(); 
+                        return;
+                    } else if (el.className === 'dtb-overlay') {
+                        dtOptions.overlayBox.hide();
+                        el = document.elementFromPoint(e.clientX, e.clientY);
+                    }
+                    dtOptions.overlayBox.show();   
+
+                    if (el === lastTarget) 
+                        return;
+                    lastTarget = el;
+                    el = $(el).closest('[tpl]');
+                    ls.debugtoolbar.reDrawOverlay(el);
+                });
 			}else{
 				status =  0;
 				panelBtn.removeClass('active');
+                // Disable onmousemove listener for the block finder
+                $('body').unbind('mousemove');
 			}
-			$.cookie('dtb-overlay-element',status,{
-				path: "/"
-			});
 			ls.debugtoolbar.options.overlayElement = status;
 			return false;
 		});
@@ -354,36 +380,6 @@ ls.debugtoolbar = (function ($) {
 		if(li){
 			$('#DTBTplList').html('').append(li);
 		}
-
-		var lastTarget, last = +new Date;
-		var dtOptions = this.options;
-		$('body').bind('mousemove',function(e){
-			if(dtOptions.overlayElement == 0){
-				if(dtOptions.overlayBox.is(':visible') && !dtOptions.overlayBox.hasClass('dtb-overlay-clicked')) {
-					dtOptions.overlayBox.hide();	
-				}
-				return false;
-			} 
-			var el = e.target;
-			var now = +new Date;
-			if (now-last < 25) 
-				return;
-			last = now;
-			if ((el === document.body) || (el.id === 'DTB') || ($(el).parents('#DTB').length)) {
-				dtOptions.overlayBox.hide(); 
-				return;
-			} else if (el.className === 'dtb-overlay') {
-				dtOptions.overlayBox.hide();
-				el = document.elementFromPoint(e.clientX, e.clientY);
-			}
-			dtOptions.overlayBox.show();   
-
-			if (el === lastTarget) 
-				return;
-			lastTarget = el;
-			el = $(el).closest('[tpl]');
-			ls.debugtoolbar.reDrawOverlay(el);
-		});
 	};
 	return this;
 }).call(ls.debugtoolbar || {},jQuery);
@@ -393,3 +389,12 @@ jQuery(window).load(function () {
 });
 
 
+$(document).ready(function(){
+    $(document).click(function(e){
+        var element = $(e.target);        
+        if( $('#DTB').css('display') == 'block' && element.closest('.dtb-sub')[0] == undefined)  
+        {
+                $('.dtb-sub').css('display','none');
+         }
+    });
+});
