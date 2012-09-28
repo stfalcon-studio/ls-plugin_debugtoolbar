@@ -28,6 +28,7 @@ static $sWholeTplFullpath = '';
  *
  * @param type $sSource
  * @param Smarty_Internal_Template $oTemplate
+ * 
  * @return type 
  */
 
@@ -36,8 +37,7 @@ function smarty_prefilter_markup($sSource, Smarty_Internal_Template $oTemplate)
 	global $sWholeTplFullpath;
 	$oConfig = $oTemplate->getTemplateVars('oConfig');
 	if ($sWholeTplFullpath == '') {
-		$sWholeTplFullpath = str_replace($oConfig->Get('path.root.server'), '', $oTemplate->smarty->_current_file);
-		$sWholeTplFullpath = htmlspecialchars($sWholeTplFullpath, ENT_QUOTES, 'UTF-8');
+		$sWholeTplFullpath = get_path_to_file($oTemplate);
 		return $sSource;
 	}
         
@@ -46,8 +46,7 @@ function smarty_prefilter_markup($sSource, Smarty_Internal_Template $oTemplate)
 		$sSource = preg_replace($sPattern, "$1 tpl=\"{$sWholeTplFullpath}\"$2", $sSource, 1);
 	}
 
-	$sTplFullpath = str_replace($oConfig->Get('path.root.server'), '', $oTemplate->smarty->_current_file);
-	$sTplFullpath = htmlspecialchars($sTplFullpath, ENT_QUOTES, 'UTF-8');
+	$sTplFullpath = get_path_to_file($oTemplate);
 
 	$sPattern = '!(<body)([^<]*>)!';
 	if (preg_match($sPattern, $sSource)) {
@@ -55,6 +54,30 @@ function smarty_prefilter_markup($sSource, Smarty_Internal_Template $oTemplate)
 	} else {
 		return preg_replace('!(<\w+)([^<]*>)!', "$1 tpl=\"{$sTplFullpath}\"$2", $sSource, 1);
 	}
+}
+
+/**
+ * Get path to template file depending on LiveStreet version
+ * 
+ * @param Smarty_Internal_Template $oTemplate
+ * 
+ * @return type
+ */
+function get_path_to_file(Smarty_Internal_Template $oTemplate)
+{
+    $oConfig = $oTemplate->getTemplateVars('oConfig');
+
+    if (method_exists($oTemplate, 'getTemplateFilepath')) {
+        $file = $oTemplate->getTemplateFilepath();
+    } elseif (isset($oTemplate->smarty->_current_file)) {
+        $file = $oTemplate->smarty->_current_file;
+    } else {
+        return '';
+    }
+
+    $path = str_replace($oConfig->Get('path.root.server'), '', $file);
+
+    return htmlspecialchars($path, ENT_QUOTES, 'UTF-8');
 }
 
 ?>
