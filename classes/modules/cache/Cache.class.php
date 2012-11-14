@@ -17,7 +17,7 @@ class PluginDebugtoolbar_ModuleCache extends PluginDebugtoolbar_Inherit_ModuleCa
     public function Set($data, $sName, $aTags = array(), $iTimeLife = false)
     {
         PluginDebugtoolbar::setCacheData('set', $sName);
-        return parent::Set($data,$sName,$aTags=array(),$iTimeLife=false);
+        return parent::Set($data, $sName, $aTags=array(), $iTimeLife);
     }
 
 }
