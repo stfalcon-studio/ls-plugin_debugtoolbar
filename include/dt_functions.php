@@ -27,4 +27,3 @@ function formatBytes($iSize, $sFormat = NULL)
 
 	return sprintf($sFormat, $iSize / pow(1024, $iUnit), $units[$iUnit]);
 }
-

@@ -19,10 +19,11 @@ include_once 'include/dt_functions.php';
 class PluginDebugtoolbar extends Plugin
 {
 
-	// SQL queries storage
-	protected static $aSqlData = array();
-//      // Cache query store
-	protected static $aCacheData = array();
+    // SQL queries storage
+    protected static $aSqlData = array();
+
+    // Cache query store
+    protected static $aCacheData = array();
 
 	/**
 	 * Store SQL data into temp storage
@@ -63,30 +64,35 @@ class PluginDebugtoolbar extends Plugin
 		}
 	}
 
-        public static function setCacheData($action, $cacheKey)
-        {
-            self::$aCacheData[] = array(
-                'action' => $action,
-                'cacheKey' => $cacheKey
-            );
-        }
+    /**
+     * @param string $action
+     * @param string $cacheKey
+     */
+    public static function setCacheData($action, $cacheKey)
+    {
+        self::$aCacheData[] = array(
+            'action'   => $action,
+            'cacheKey' => $cacheKey
+        );
+    }
 
-        /**
-	 * Get SQL data from temp storage
-	 *
-	 * @return array
-	 */
-	public static function getSqlData()
-	{
-		return self::$aSqlData;
-	}
-        /*
-         * Get Cache data from temp store
-         */
-	public static function getCacheData()
-	{
-            return self::$aCacheData;
-	}
+    /*
+     * Get Cache data from temp store
+     */
+    public static function getCacheData()
+    {
+        return self::$aCacheData;
+    }
+
+    /**
+     * Get SQL data from temp storage
+     *
+     * @return array
+     */
+    public static function getSqlData()
+    {
+        return self::$aSqlData;
+    }
 
 	/**
 	 * Конструктор плагина
@@ -94,12 +100,12 @@ class PluginDebugtoolbar extends Plugin
 	public function __construct()
 	{
 
-		// Включаем логирование запросов, для того чтобы их позже вывести в панель
-		Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugtoolbar::setSqlData');
+        // Включаем логирование запросов, для того чтобы их позже вывести в панель
+        Engine::getInstance()->Database_GetConnect()->setLogger('PluginDebugtoolbar::setSqlData');
 
-                if (Config::Get('plugin.debugtoolbar.log_cache')) {
-                    $this->aInherits['module'][] = 'ModuleCache';
-                }
+        if (Config::Get('plugin.debugtoolbar.log_cache')) {
+            $this->aInherits['module'][] = 'ModuleCache';
+        }
 	}
 
 	/**
@@ -111,6 +117,7 @@ class PluginDebugtoolbar extends Plugin
 	{
 		$this->Cache_Clean();
 		$this->Viewer_GetSmartyObject()->clearCompiledTemplate();
+
 		return true;
 	}
 
@@ -123,6 +130,7 @@ class PluginDebugtoolbar extends Plugin
 	{
 		$this->Cache_Clean();
 		$this->Viewer_GetSmartyObject()->clearCompiledTemplate();
+
 		return true;
 	}
 
@@ -147,5 +155,4 @@ class PluginDebugtoolbar extends Plugin
 		// Добавляем предварительный фильтр спец. разметки
 		$oSmarty->loadFilter('pre', 'markup');
 	}
-
 }
